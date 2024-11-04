@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>resx_wpf</RootNamespace>
+    <UseWPF>True</UseWPF>
+
+    <!-- cannot use below line in WPF project as it recursively creates _wpftmp.csproj files -->
+    <!-- <CoreCompileDependsOn>PrepareResources;$(CoreCompileDependsOn)</CoreCompileDependsOn> -->
+  </PropertyGroup>
+
+  <!--
+        This is required because OmniSharp (VSCode) calls the build in a way
+        that will skip resource generation. Without this line, OmniSharp won't
+        find the generated .cs files and analysis will fail.
+    -->
+  <PropertyGroup Condition="'$(UseWPF)' == 'true'">
+    <!-- Ensure WPF apps generate RESX designer files with namespace not taken from wpftmp file. -->
+    <RootNamespace Condition="$(RootNamespace.EndsWith('_wpftmp'))">$(_TargetAssemblyProjectName)</RootNamespace>
+    <!-- Ensure WPF apps invoke the RESX generator -->
+    <CoreCompileDependsOn>$(CoreCompileDependsOn);SplitResourcesByCulture;CreateManifestResourceNames;CoreResGen</CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\MyResource.de.resx">
+      <Generator>MSBuild:Compile</Generator>
+      <ManifestResourceName>test.MyResource.de</ManifestResourceName>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\MyResource.resx">
+      <Generator>MSBuild:Compile</Generator>
+      <PublicClass>true</PublicClass>
+      <LastGenOutput>MyResource.Designer.cs</LastGenOutput>
+      <ManifestResourceName>test.MyResource</ManifestResourceName>
+
+      <StronglyTypedFileName>$(IntermediateOutputPath)\MyResource.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedNamespace>test</StronglyTypedNamespace>
+      <StronglyTypedClassName>MyResource</StronglyTypedClassName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
